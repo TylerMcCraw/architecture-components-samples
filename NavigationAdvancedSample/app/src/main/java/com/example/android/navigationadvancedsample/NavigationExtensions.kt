@@ -17,15 +17,68 @@
 package com.example.android.navigationadvancedsample
 
 import android.content.Intent
+import android.net.Uri
 import android.util.SparseArray
 import androidx.core.util.forEach
 import androidx.core.util.set
+import androidx.core.view.forEachIndexed
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
+
+fun BottomNavigationView.navigateToUri(
+    navGraphIds: List<Int>,
+    fragmentManager: FragmentManager,
+    containerId: Int,
+    uri: Uri
+) {
+    // First, try to handle this Uri in the currently selected nav graph
+    var selectedItemIndex: Int = -1
+    run menuLoop@{
+        menu.forEachIndexed { index, item ->
+            if (selectedItemId == item.itemId) {
+                selectedItemIndex = index
+                return@menuLoop
+            }
+        }
+    }
+    val selectedNavHostFragment = obtainNavHostFragment(
+        fragmentManager,
+        getFragmentTag(selectedItemIndex),
+        navGraphIds[selectedItemIndex],
+        containerId
+    )
+    if (selectedNavHostFragment.navController.graph.hasDeepLink(uri)) {
+        selectedNavHostFragment.navController.navigate(uri)
+    } else {
+        // Otherwise, find a navigation graph that can handle this Uri
+        run navGraphIdsLoop@{
+            navGraphIds.forEachIndexed { index, navGraphId ->
+                val fragmentTag = getFragmentTag(index)
+
+                // Find or create the Navigation host fragment
+                val navHostFragment = obtainNavHostFragment(
+                    fragmentManager,
+                    fragmentTag,
+                    navGraphId,
+                    containerId
+                )
+                // Handle Uri
+                if (navHostFragment.navController.graph.hasDeepLink(uri)) {
+                    navHostFragment.navController.navigate(uri)
+                    if (selectedItemId != navHostFragment.navController.graph.id) {
+                        this.selectedItemId = navHostFragment.navController.graph.id
+                    }
+                    // Once it's handled, don't handle it in any other graph
+                    return@navGraphIdsLoop
+                }
+            }
+        }
+    }
+}
 
 /**
  * Manages the various graphs needed for a [BottomNavigationView].

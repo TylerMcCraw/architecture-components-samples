@@ -21,21 +21,25 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.example.android.navigationadvancedsample.R
-
 
 /**
  * Shows a register form to showcase UI state persistence. It has a button that goes to [Registered]
  */
 class Register : Fragment() {
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_register, container, false)
 
+        view.findViewById<TextView>(R.id.username_text).setText(arguments?.getString("userName"))
         view.findViewById<Button>(R.id.signup_btn).setOnClickListener {
             findNavController().navigate(R.id.action_register_to_registered)
         }

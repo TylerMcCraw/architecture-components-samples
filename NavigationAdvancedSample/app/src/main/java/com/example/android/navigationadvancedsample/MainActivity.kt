@@ -16,6 +16,7 @@
 
 package com.example.android.navigationadvancedsample
 
+import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LiveData
@@ -27,9 +28,10 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 /**
  * An activity that inflates a layout that has a [BottomNavigationView].
  */
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), NavigatorActivity {
 
     private var currentNavController: LiveData<NavController>? = null
+    private val navGraphIds = listOf(R.navigation.home, R.navigation.list, R.navigation.form)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,8 +55,6 @@ class MainActivity : AppCompatActivity() {
     private fun setupBottomNavigationBar() {
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_nav)
 
-        val navGraphIds = listOf(R.navigation.home, R.navigation.list, R.navigation.form)
-
         // Setup the bottom navigation view with a list of navigation graphs
         val controller = bottomNavigationView.setupWithNavController(
             navGraphIds = navGraphIds,
@@ -72,5 +72,14 @@ class MainActivity : AppCompatActivity() {
 
     override fun onSupportNavigateUp(): Boolean {
         return currentNavController?.value?.navigateUp() ?: false
+    }
+
+    override fun navigateToUri(uri: Uri) {
+        findViewById<BottomNavigationView>(R.id.bottom_nav).navigateToUri(
+            navGraphIds = navGraphIds,
+            fragmentManager = supportFragmentManager,
+            containerId = R.id.nav_host_container,
+            uri = uri
+        )
     }
 }
