@@ -25,6 +25,7 @@ import androidx.core.view.forEachIndexed
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -52,7 +53,9 @@ fun BottomNavigationView.navigateToUri(
         containerId
     )
     if (selectedNavHostFragment.navController.graph.hasDeepLink(uri)) {
-        selectedNavHostFragment.navController.navigate(uri)
+        selectedNavHostFragment.lifecycleScope.launchWhenStarted {
+            selectedNavHostFragment.navController.navigate(uri)
+        }
     } else {
         // Otherwise, find a navigation graph that can handle this Uri
         run navGraphIdsLoop@{
@@ -68,7 +71,9 @@ fun BottomNavigationView.navigateToUri(
                 )
                 // Handle Uri
                 if (navHostFragment.navController.graph.hasDeepLink(uri)) {
-                    navHostFragment.navController.navigate(uri)
+                    navHostFragment.lifecycleScope.launchWhenStarted {
+                        navHostFragment.navController.navigate(uri)
+                    }
                     if (selectedItemId != navHostFragment.navController.graph.id) {
                         this.selectedItemId = navHostFragment.navController.graph.id
                     }
